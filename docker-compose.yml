@@ -18,7 +18,7 @@ services:
       - "80:80"
     volumes:
       - ./app/front:/usr/share/nginx/html
-      # Nginxの設定ファイルを同期（後述）
+      # Nginxの設定ファイルを同期
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - backend
