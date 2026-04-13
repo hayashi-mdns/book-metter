@@ -4,7 +4,7 @@ import os
 
 # パスワードハッシュ化の設定
 pwd_context = CryptContext(
-    schemes=["pbkdf2_sha256"], # 👈 bcrypt の相性問題を避けるため pbkdf2 を使用
+    schemes=["pbkdf2_sha256"], 
     deprecated="auto"
 )
 
