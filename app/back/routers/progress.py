@@ -3,6 +3,12 @@ from sqlalchemy.orm import Session
 from typing import List
 from .. import database, models, schemas, dependencies
 
+# ============================== #
+# 1. このファイル(progress.py)の役割
+# 読書進捗（Progress）に関するAPIエンドポイントを定義します。
+# ユーザーが読んだページ数を記録したり、グループ内での進捗を確認したりするための機能を提供します。
+# ============================== #
+
 router = APIRouter(prefix="/api/progress", tags=["progress"])
 
 # 1. 進捗の取得: GET /group/{group_id}/progress
