@@ -82,7 +82,7 @@ class Group(Base):
     book_id = Column(Integer, ForeignKey("books.id"))
     owner = Column(Integer, ForeignKey("users.id"))
     is_lock = Column(Boolean, default=False) # デフォルトではFalse
-    password_hash = Column(String)
+    password_hash = Column(String, nullable=True)
 
     owner_user = relationship("User", back_populates="ound_group")
     target_book = relationship("Book", back_populates="group")
