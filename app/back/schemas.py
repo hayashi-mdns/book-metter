@@ -31,37 +31,36 @@ from datetime import datetime
 # ============================== #
 
 #=========================================#
-# 進捗ログ（ProgressLog）に関するクラス定義
+# ユーザー（User）に関するクラス定義
 #=========================================#
 # 1. Base (共通基盤)
-# ユーザーが進捗ログを作成・更新する際に必要な情報のうち、共通するデータを記述したクラス
-class ProgressBase(BaseModel):
-    start_page: int
-    end_page: int
-    progress_memo: Optional[str] = None
-# 2. Create (登録リクエスト用)
-# 進捗を新規登録する際に受け取るデータの形です。今回はBaseと全く同じ項目で良いため、そのまま継承しています。
-class ProgressCreate(ProgressBase):
-    pass
-# 3. DB取得・レスポンス用
-# データベースから取得した進捗データをフロントエンドに返す際のデータの形です。
-# Baseの項目に加え、DB側で自動採番・記録される id や created_at などを追加しています。
-class Progress(ProgressBase):
-    id: int
-    group_id: int
-    user_id: int
-    created_at: Optional[datetime] = None 
+# ユーザーに関するデータで、リクエスト・レスポンス問わず共通して使う項目です。
+class UserBase(BaseModel):
+    username: str
 
-    @computed_field
-    def total_read_pages(self) -> int:
-        from .crud import calculate_total_progress
-        # ログが空の場合の安全策
-        if not self.progress_logs:
-            return 0
-        return calculate_total_progress(self.progress_logs)
-    
+# 2. Create (登録リクエスト用)
+# アカウントの新規登録時に、フロントエンドから送られてくるデータの形です。
+# Baseの項目(username)に加え、登録時に必須となる password をここで受け取ります。
+# （※パスワードを受け取るのは「このクラスだけ」に限定します）
+class UserCreate(UserBase):
+    password: str # サーバ側でハッシュ計算，保存
+
+# 3. DB取得・レスポンス用
+# データベースから取得したユーザー情報をフロントエンドに返す際のデータの形です。
+# このクラスには password を含めていません！
+# これにより、APIのレスポンスに誤ってパスワードが混入し、画面側に漏洩する事故を防いでいます。
+class User(UserBase):
+    id: int # DBが自動採番したユーザーID
+    created_at: Optional[datetime] = None #アカウント作成日時
+
+    #books: List[Book] = []
+    # 関連データの入れ子（ネスト）
+    # このユーザーが登録している「本」のリスト（Bookスキーマの配列）をまとめて返します。
+    # ユーザーのマイページなどを表示する際に、本の一覧も一緒に取得する際に利用。
+
     class Config:
-        from_attributes = True # DBから取得したオブジェクトをそのままJSONに変換するための設定
+        from_attributes = True
+
 
 #=========================================#
 # 本の登録（Book）に関するクラス定義
@@ -90,7 +89,7 @@ class BookBase(BaseModel):
 # Baseの項目に加え、「誰の本として登録するか」を指定するために user_id が必須になっています。
 # （※この時点ではまだDBに保存されていないため、id はありません）
 class BookCreate(BookBase):
-    pass
+    group_id: int
 
 # 3. DB取得・レスポンス用
 # データベースから取得した本データを、フロントエンドに返す際のデータの形です。
@@ -102,103 +101,74 @@ class Book(BookBase):
         from_attributes = True
 
 #=========================================#
-# ユーザー（User）に関するクラス定義
+# 輪講グループ（Group）に関するクラス定義
 #=========================================#
-# 1. Base (共通基盤)
-# ユーザーに関するデータで、リクエスト・レスポンス問わず共通して使う項目です。
-class UserBase(BaseModel):
-    username: str
-    email: str
-
-# 2. Create (登録リクエスト用)
-# アカウントの新規登録時に、フロントエンドから送られてくるデータの形です。
-# Baseの項目(username)に加え、登録時に必須となる password をここで受け取ります。
-# （※パスワードを受け取るのは「このクラスだけ」に限定します）
-class UserCreate(UserBase):
-    password_hash: str
-
-# 3. DB取得・レスポンス用
-# データベースから取得したユーザー情報をフロントエンドに返す際のデータの形です。
-# このクラスには password を含めていません！
-# これにより、APIのレスポンスに誤ってパスワードが混入し、画面側に漏洩する事故を防いでいます。
-class User(UserBase):
-    id: int # DBが自動採番したユーザーID
-    created_at: Optional[datetime] = None #アカウント作成日時
-    last_login: Optional[datetime] = None
-
-    #books: List[Book] = []
-    # 関連データの入れ子（ネスト）
-    # このユーザーが登録している「本」のリスト（Bookスキーマの配列）をまとめて返します。
-    # ユーザーのマイページなどを表示する際に、本の一覧も一緒に取得する際に利用。
-
-    class Config:
-        from_attributes = True
 
 class GroupBase(BaseModel):
     name: str
-    
+    owner: int
+    is_lock: bool
 
 class GroupCreate(GroupBase):
-    pass
+    password: str # サーバ側でハッシュ計算，保存
 
 class Group(GroupBase):
     id: int
-    book_id: int
-    progress_logs: List[Progress] = []
+    book: Book = null
+    progresses: List[Progress] = []
+    members: List[User] = []
 
-    # APIがBookを返す時に、自動で「実質の合計ページ」を計算して含める
-    @computed_field
-    def total_read_pages(self) -> int:
-        from .crud import calculate_total_progress
-        # ログが空の場合の安全策
-        if not self.progress_logs:
-            return 0
-        return calculate_total_progress(self.progress_logs)
+    # # APIがBookを返す時に、自動で「実質の合計ページ」を計算して含める
+    # @computed_field
+    # def total_read_pages(self) -> int:
+    #     from .crud import calculate_total_progress
+    #     # ログが空の場合の安全策
+    #     if not self.progress_logs:
+    #         return 0
+    #     return calculate_total_progress(self.progress_logs)
 
     class Config:
         from_attributes = True # DBから取得したオブジェクトをそのままJSONに変換するための設定
 
-class GroupMemberBase(BaseModel):
+#
+# 輪講グループとユーザの中間テーブルに関するクラス定義
+#
+
+class MembershipBase(BaseModel):
     pass
 
-class GroupMemberCreate(GroupMemberBase):
+class GroupMemberCreate(MembershipBase):
     pass
 
-class GroupMember(GroupMemberBase):
+class GroupMember(MembershipBase):
     group_id: int
     user_id: int
 
     class Config:
         from_attributes = True # DBから取得したオブジェクトをそのままJSONに変換するための設定
 
-class MemoBase(BaseModel):
-    location: int
-    text: Optional[str] = None
-    
-class MemoCreate(MemoBase):
+#=========================================#
+# 進捗ログ（ProgressLog）に関するクラス定義
+#=========================================#
+# 1. Base (共通基盤)
+# ユーザーが進捗ログを作成・更新する際に必要な情報のうち、共通するデータを記述したクラス
+class ProgressBase(BaseModel):
+    start_page: int
+    end_page: int
+    progress_memo: Optional[str] = None
+# 2. Create (登録リクエスト用)
+# 進捗を新規登録する際に受け取るデータの形です。今回はBaseと全く同じ項目で良いため、そのまま継承しています。
+class ProgressCreate(ProgressBase):
     pass
-
-class Memo(MemoBase):
+# 3. DB取得・レスポンス用
+# データベースから取得した進捗データをフロントエンドに返す際のデータの形です。
+# Baseの項目に加え、DB側で自動採番・記録される id や created_at などを追加しています。
+class Progress(ProgressBase):
     id: int
     group_id: int
     user_id: int
-    created_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True # DBから取得したオブジェクトをそのままJSONに変換するための設定
-
-class ResumeBase(BaseModel):
-    location: Optional[int] = None
-    url: Optional[str] = None
+    created_at: Optional[datetime] = None 
     
-class ResumeCreate(ResumeBase):
-    pass
-
-class Resume(ResumeBase):
-    id: int
-    group_id: int
-    user_id: int
-    created_at: Optional[datetime] = None
-
     class Config:
         from_attributes = True # DBから取得したオブジェクトをそのままJSONに変換するための設定
+

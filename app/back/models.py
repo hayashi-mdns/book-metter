@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text
+from sqlalchemy import Column, Boolean, Integer, String, ForeignKey, DateTime, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -79,7 +79,7 @@ class Group(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
-    book_id = Column(Integer, ForeignKey("books.id"))
+    book_id = Column(Integer, ForeignKey("books.id"), nullable=True)
     owner = Column(Integer, ForeignKey("users.id"))
     is_lock = Column(Boolean, default=False) # デフォルトではFalse
     password_hash = Column(String, nullable=True)
