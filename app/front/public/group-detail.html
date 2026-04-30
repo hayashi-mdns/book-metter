@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book-meter - グループ詳細</title>
+    <link rel="stylesheet" href="/src/css/style.css">
+    <script src="/src/js/main.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <a href="/public/index.html" style="text-decoration: none;">
+                <h1>📚 Book-meter</h1>
+            </a>
+        </div>
+        
+        <nav class="global-nav">
+            <a href="/public/index.html" class="nav-link">ホーム</a>
+            <a href="/public/search-book.html" class="nav-link">本を探す</a>
+            <a href="/public/my-groups.html" class="nav-link">参加中のグループ</a>
+            <a href="/public/search-group.html" class="nav-link">グループを探す</a>
+        </nav>
+
+        <div class="user-controls">
+            <span id="header-username">ID: test_user</span>
+            <button class="header-btn" onclick="logout()">ログアウト</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="detail-container">
+            
+            <div class="detail-main">
+                
+                <section class="detail-section">
+                    <div class="section-header">
+                        <h2>📊 進捗の記録と確認</h2>
+                    </div>
+                    
+                    <div class="input-card">
+                        <h4 style="margin-top:0; margin-bottom: 10px;">＋ 新しい進捗を記録する</h4>
+                        <div class="record-area">
+                            <div class="progress-input-group">
+                                <input type="number" placeholder="開始" min="1"> <span>〜</span> <input type="number" placeholder="終了" min="1"> <span>ページ</span>
+                            </div>
+                            <div class="memo-input-group">
+                                <input type="text" placeholder="メモや感想（任意）">
+                                <button type="button" class="btn-record" onclick="alert('進捗を記録しました')">記録</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="history-list">
+                        <div class="history-item">
+                            <div class="history-user">👤 test_user</div>
+                            <div class="history-data">
+                                <span class="badge-page">P.150 〜 200</span>
+                                <span class="history-memo">第4章を読み終わりました。〇〇の概念が難しかった。</span>
+                            </div>
+                            <div class="history-time">2時間前</div>
+                        </div>
+                        <div class="history-item">
+                            <div class="history-user">👤 user_B</div>
+                            <div class="history-data">
+                                <span class="badge-page">P.100 〜 150</span>
+                                <span class="history-memo">第3章完了！</span>
+                            </div>
+                            <div class="history-time">昨日 21:00</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="detail-section" style="margin-top: 40px;">
+                    <div class="section-header">
+                        <h2>📁 輪講資料の共有</h2>
+                    </div>
+                    
+                    <div class="input-card">
+                        <h4 style="margin-top:0; margin-bottom: 10px;">＋ 資料をアップロードする</h4>
+                        <div class="upload-group">
+                            <input type="file" id="file-upload">
+                            <button type="button" class="btn-record" onclick="alert('資料をアップロードしました')">アップロード</button>
+                        </div>
+                    </div>
+
+                    <div class="material-list">
+                        <div class="material-item">
+                            <div class="material-icon">📄</div>
+                            <div class="material-info">
+                                <a href="#" class="material-name">第4章_解説スライド.pdf</a>
+                                <div class="material-meta">アップロード: test_user (2時間前)</div>
+                            </div>
+                            <button class="header-btn" onclick="alert('ダウンロードします')">DL</button>
+                        </div>
+                        <div class="material-item">
+                            <div class="material-icon">📝</div>
+                            <div class="material-info">
+                                <a href="#" class="material-name">第3章_要約まとめ.docx</a>
+                                <div class="material-meta">アップロード: user_B (昨日)</div>
+                            </div>
+                            <button class="header-btn" onclick="alert('ダウンロードします')">DL</button>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <aside class="detail-sidebar">
+                <div class="group-summary-card">
+                    <div class="group-icon" style="margin: 0 auto 15px;">💻</div>
+                    <h2 class="group-name" style="text-align: center;">もくもく技術書ドリル</h2>
+                    <p style="text-align: center; color: var(--text-sub); font-size: 0.9rem; margin-bottom: 20px;">メンバー: 45人</p>
+                    
+                    <div class="target-book">
+                        <h4 style="margin:0 0 10px; font-size:0.9rem; color:var(--text-sub);">📖 課題図書</h4>
+                        <div style="display:flex; gap:10px;">
+                            <img src="https://ndlsearch.ndl.go.jp/thumbnail/9784873115658.jpg" alt="書影" style="width:50px; height:70px; object-fit:cover; border-radius:4px;">
+                            <div style="font-size:0.9rem; font-weight:bold;">リーダブルコード</div>
+                        </div>
+                        <div class="progress-container" style="margin-top: 15px;">
+                            <span class="progress-text">グループ全体の進捗: 150 / 237 P</span>
+                            <div class="range-bar-wrapper" data-total="237" data-logs='[{"s":0, "e":150}]'></div>
+                        </div>
+                    </div>
+                    
+                    <button class="header-btn" style="width: 100%; margin-top: 20px; text-align: center; border-color: #ff6b6b; color: #ff6b6b;" onclick="alert('グループ設定画面へ移動します（モック）')">⚙️ グループ設定</button>
+                </div>
+            </aside>
+
+        </div>
+    </main>
+
+</body>
+</html>

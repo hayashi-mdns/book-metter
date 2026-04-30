@@ -34,7 +34,7 @@ class User(Base):
     last_login = Column(DateTime(timezone=True))
     email = Column(String)
 
-    joined_groups = relationship("Group_member", back_popuplates="user")
+    joined_groups = relationship("GroupMember", back_populates="joined_groups")
 
 #=========================================#
 # 本（Book）のテーブル設計図
@@ -102,9 +102,8 @@ class Group(Base):
 
 class GroupMember(Base):
     __tablename__ = "group_members"
-
-    group_id = Column(Integer, ForeignKey("groups.id"))
-    user_id = Column(Integer, ForeignKey("users.id"))
+    group_id = Column(Integer, ForeignKey("groups.id"), primary_key=True)  
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)    
 
     group = relationship("Group", back_populates="members")
     user = relationship("User", back_populates="joined_groups")
