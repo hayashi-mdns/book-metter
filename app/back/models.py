@@ -22,14 +22,20 @@ class User(Base):
     joined_groups = association_proxy("membership", "group")
 
 #=========================================#
-# 本（Book）のテーブル設計図
+# 輪講グループ（Group）のテーブル設計図
+# 本（Book）のテーブル設計図を統合
 #=========================================#
-class Book(Base):
-    __tablename__ = "books"
+class Group(Base):
+    __tablename__ = "groups"
 
+# 輪講グループ（Group）
     id = Column(Integer, primary_key=True, index=True)
-    # ↓ 削除: Group も books.id を参照しているので循環になる
-    # group_id = Column(Integer, ForeignKey("groups.id"))
+    name = Column(String, unique=True, index=True)
+    owner = Column(Integer, ForeignKey("users.id"))
+    is_lock = Column(Boolean, default=False)
+    password_hash = Column(String, nullable=True)
+
+# 本（Book）
     title = Column(String, index=True)
     total_pages = Column(Integer)
 
@@ -43,24 +49,8 @@ class Book(Base):
     small_cover_url = Column(String, nullable=True)
     cover_url = Column(String, nullable=True)
 
-    # Group.book_id → Book なので、Book側は backref だけ持つ
-    groups = relationship("Group", back_populates="target_book")
-
-#=========================================#
-# 輪講グループ（Group）のテーブル設計図
-#=========================================#
-class Group(Base):
-    __tablename__ = "groups"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, index=True)
-    book_id = Column(Integer, ForeignKey("books.id"), nullable=True)
-    owner = Column(Integer, ForeignKey("users.id"))
-    is_lock = Column(Boolean, default=False)
-    password_hash = Column(String, nullable=True)
-
+# リレーションシップ
     owner_user = relationship("User", back_populates="owned_groups")
-    target_book = relationship("Book", back_populates="groups")
     membership = relationship("Membership", back_populates="group")
     progresses = relationship("Progress", back_populates="group")
 
@@ -97,5 +87,3 @@ class Progress(Base):
 
     user = relationship("User", back_populates="progresses")
     group = relationship("Group", back_populates="progresses")
-
-    book = association_proxy("group", "target_book")
